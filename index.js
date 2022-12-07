@@ -30,34 +30,34 @@ const crawler = async () => {
     const result = [];
     const browser = await puppeteer.launch({ headless: true });
 
-    await Promise.all(
-      records.map(async (v, i) => {
-        try {
-          const page = await browser.newPage();
-          await page.goto(v[1]);
+    const page = await browser.newPage();
 
-          //   const scoreEl = await page.$(".score.score_left .star_score");
-          const text = await page.evaluate(() => {
-            const score = document.querySelector(
-              ".score.score_left .star_score"
-            );
-            if (score) {
-              return score.textContent;
-            }
-          });
-          if (text) {
-            console.log(text.trim());
-            result[i] = [v[0], v[1], text.trim()];
-          }
+    console.log(await page.evaluate("navigator.userAgent"));
 
-          await page.waitForTimeout(3000);
-          await page.close();
-        } catch (err) {
-          console.error(err);
-        }
-      })
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
     );
 
+    console.log(await page.evaluate("navigator.userAgent"));
+
+    for (const [i, v] of records.entries()) {
+      console.log(v);
+
+      await page.goto(v[1]);
+
+      //   const scoreEl = await page.$(".score.score_left .star_score");
+      const text = await page.evaluate(() => {
+        const score = document.querySelector(".score.score_left .star_score");
+        if (score) {
+          return score.textContent;
+        }
+      });
+      if (text) {
+        console.log(text.trim());
+        result[i] = [v[0], v[1], text.trim()];
+      }
+    }
+    await page.close();
     await browser.close();
   } catch (e) {
     console.error(e);
