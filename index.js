@@ -35,12 +35,18 @@ const crawler = async () => {
         try {
           const page = await browser.newPage();
           await page.goto(v[1]);
-          const scoreEl = await page.$(".score.score_left .star_score");
 
-          if (scoreEl) {
-            const text = await page.evaluate((tag) => tag.textContent, scoreEl);
+          //   const scoreEl = await page.$(".score.score_left .star_score");
+          const text = await page.evaluate(() => {
+            const score = document.querySelector(
+              ".score.score_left .star_score"
+            );
+            if (score) {
+              return score.textContent;
+            }
+          });
+          if (text) {
             console.log(text.trim());
-            //   result.push([v[0], v[1], text.trim()]);
             result[i] = [v[0], v[1], text.trim()];
           }
 
@@ -53,11 +59,6 @@ const crawler = async () => {
     );
 
     await browser.close();
-
-    console.log(result);
-    const str = stringify(result);
-    console.log(str);
-    fs.writeFileSync("csv/result.csv", str);
   } catch (e) {
     console.error(e);
   }
