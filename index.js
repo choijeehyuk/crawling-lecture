@@ -42,11 +42,16 @@ const puppeteer = require("puppeteer");
 
 const crawler = async () => {
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--window-size=1440,900"],
+    });
 
     const page = await browser.newPage();
-
-    console.log(await page.evaluate("navigator.userAgent"));
+    page.setViewport({
+      width: 1440,
+      height: 900,
+    });
 
     await page.setUserAgent(
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
@@ -73,7 +78,16 @@ const crawler = async () => {
       });
 
       if (result.img) {
-        console.log(result.img);
+        await page.screenshot({
+          path: `screenshot/${v[0]}.png`,
+          //   fullPage: true,
+          clip: {
+            x: 100,
+            y: 100,
+            width: 300,
+            height: 300,
+          },
+        });
         const imgResult = await axios.get(result.img.replace(/\?.*$/, ""), {
           responseType: "arraybuffer",
         });
