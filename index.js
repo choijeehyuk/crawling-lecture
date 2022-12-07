@@ -1,30 +1,17 @@
-const { parse } = require("csv-parse");
+const xlsx = require("xlsx");
 
-const fs = require("fs");
+const workbook = xlsx.readFile("xlsx/data.xlsx");
+const ws = workbook.Sheets.영화목록;
 
-const csv = fs.readFileSync("csv/data.csv");
-
-const records = [];
-const parser = parse({
-  delimiter: ",",
-});
-
-parser.on("readable", () => {
-  let record;
-  while ((record = parser.read()) !== null) {
-    records.push(record);
-  }
-});
-
-parser.on("end", function () {
-  console.log("end");
-});
-
-parser.on("error", function (err) {
-  console.error(err.message);
-});
-
-parser.write(csv.toString());
-parser.end();
-
+const records = xlsx.utils.sheet_to_json(ws);
 console.log(records);
+
+records.forEach((v, i) => {
+  console.log(v.제목);
+  console.log(v.링크);
+});
+
+for (const [i, v] of records.entries()) {
+  console.log(v.제목);
+  console.log(v.링크);
+}

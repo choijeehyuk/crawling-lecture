@@ -13,6 +13,7 @@
     "nodemon": "^2.0.20"
   },
   "dependencies": {
-    "csv-parse": "^5.3.3"
+    "csv-parse": "^5.3.3",
+    "xlsx": "^0.18.5"
   }
 }
