@@ -1,4 +1,5 @@
 const fs = require("fs");
+const axios = require("axios");
 
 const { parse } = require("csv-parse");
 const { stringify } = require("csv-stringify/sync");
@@ -6,6 +7,20 @@ const { stringify } = require("csv-stringify/sync");
 const csv = fs.readFileSync("csv/data.csv").toString("utf-8");
 const parser = parse({ delimiter: "," });
 const records = [];
+
+fs.readdir("screenshot", (err) => {
+  if (err) {
+    console.error("screenshot 폴더 생성");
+    fs.mkdirSync("screenshot");
+  }
+});
+
+fs.readdir("poster", (err) => {
+  if (err) {
+    console.error("poster 폴더 생성");
+    fs.mkdirSync("poster");
+  }
+});
 
 parser.on("readable", function () {
   let record;
@@ -27,7 +42,6 @@ const puppeteer = require("puppeteer");
 
 const crawler = async () => {
   try {
-    const result = [];
     const browser = await puppeteer.launch({ headless: true });
 
     const page = await browser.newPage();
@@ -41,20 +55,29 @@ const crawler = async () => {
     console.log(await page.evaluate("navigator.userAgent"));
 
     for (const [i, v] of records.entries()) {
-      console.log(v);
-
       await page.goto(v[1]);
 
-      //   const scoreEl = await page.$(".score.score_left .star_score");
-      const text = await page.evaluate(() => {
-        const score = document.querySelector(".score.score_left .star_score");
-        if (score) {
-          return score.textContent;
+      const result = await page.evaluate(() => {
+        const scoreEl = document.querySelector(".score.score_left .star_score");
+        let score = "";
+        if (scoreEl) {
+          score = scoreEl.textContent.trim();
         }
+
+        const imgEl = document.querySelector(".poster img");
+        let img = "";
+        if (imgEl) {
+          img = imgEl.src;
+        }
+        return { score, img };
       });
-      if (text) {
-        console.log(text.trim());
-        result[i] = [v[0], v[1], text.trim()];
+
+      if (result.img) {
+        console.log(result.img);
+        const imgResult = await axios.get(result.img.replace(/\?.*$/, ""), {
+          responseType: "arraybuffer",
+        });
+        fs.writeFileSync(`poster/${v[0]}.jpg`, imgResult.data);
       }
     }
     await page.close();
